@@ -9,8 +9,11 @@ environment:
 # Add regular dependencies here.
 dependencies:
   ansi_styles: ^0.3.2+1
+  flutter_rust_bridge: 2.11.1
   logger: ^2.6.2
   path: ^1.9.0
+  rust_lib_systemdashboardcli:
+    path: rust_builder
   system_info2: ^4.1.0
 
 dev_dependencies:

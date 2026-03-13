@@ -1,14 +1,16 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'package:systemdashboardcli/src/rust/frb_generated.dart';
 import 'websocket.dart';
 
 /// serves both WebSocket and static files
 Future<void> startServer() async {
+  await RustLib.init();
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 4040);
   print('🌐 Dashboard running at http://localhost:4040');
   print('📊 WebSocket endpoint: ws://localhost:4040/ws');
 
- //WebSocket broadcasting
+  //WebSocket broadcasting
   startStatsBroadcast();
 
   await for (HttpRequest request in server) {
@@ -18,11 +20,15 @@ Future<void> startServer() async {
       continue;
     }
     // Serve Flutter Web files
-    final requestedPath = request.uri.path == '/' ? 'index.html' : request.uri.path.substring(1);
+    final requestedPath = request.uri.path == '/'
+        ? 'index.html'
+        : request.uri.path.substring(1);
     final filePath = p.join('web', requestedPath);
     final file = File(filePath);
     if (await file.exists()) {
-      request.response.headers.contentType = ContentType.parse(_getMimeType(filePath));
+      request.response.headers.contentType = ContentType.parse(
+        _getMimeType(filePath),
+      );
       await request.response.addStream(file.openRead());
       await request.response.close();
     } else {

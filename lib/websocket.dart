@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:system_info2/system_info2.dart';
+import 'package:systemdashboardcli/src/rust/api/simple.dart' as rust_api;
 
 /// Stores all active WebSocket connections
 final clients = <WebSocket>{};
@@ -10,7 +10,7 @@ final clients = <WebSocket>{};
 void handleWebSocket(HttpRequest request) async {
   // Upgrade the HTTP connection to WebSocket protocol
   final socket = await WebSocketTransformer.upgrade(request);
-    clients.add(socket);
+  clients.add(socket);
   print('✅ Client connected. Total clients: ${clients.length}');
   socket.done.then((_) {
     clients.remove(socket);
@@ -18,36 +18,46 @@ void handleWebSocket(HttpRequest request) async {
   });
 }
 
-
-Map<String, dynamic> getSystemStats() {
-  final totalMem = SysInfo.getTotalPhysicalMemory();
-  final freeMem = SysInfo.getFreePhysicalMemory();
-  final usedMem = totalMem - freeMem;
+Future<Map<String, dynamic>> getSystemStats() async {
+  final stats = await rust_api.getSystemStats();
 
   return {
     // Memory stats (converted to MB for easier reading)
-    'totalMemoryMB': (totalMem / 1024 / 1024).toStringAsFixed(1),
-    'freeMemoryMB': (freeMem / 1024 / 1024).toStringAsFixed(1),
-    'usedMemoryMB': (usedMem / 1024 / 1024).toStringAsFixed(1),
-    
+    'totalMemoryMB': (stats.totalMemory.toInt() / 1024 / 1024).toStringAsFixed(
+      1,
+    ),
+    'freeMemoryMB': (stats.freeMemory.toInt() / 1024 / 1024).toStringAsFixed(1),
+    'usedMemoryMB': (stats.usedMemory.toInt() / 1024 / 1024).toStringAsFixed(1),
+    'totalSwapMB': (stats.totalSwap.toInt() / 1024 / 1024).toStringAsFixed(1),
+    'usedSwapMB': (stats.usedSwap.toInt() / 1024 / 1024).toStringAsFixed(1),
+
     // Memory usage percentage
-    'memoryUsagePercent': ((usedMem / totalMem) * 100).toStringAsFixed(1),
-    
-    // Raw bytes 
-    'totalMemory': totalMem,
-    'freeMemory': freeMem,
-    'usedMemory': usedMem,
-    
-    // Timestamp 
+    'memoryUsagePercent': stats.memoryUsagePercent.toStringAsFixed(1),
+
+    // Raw bytes
+    'totalMemory': stats.totalMemory.toString(),
+    'freeMemory': stats.freeMemory.toString(),
+    'usedMemory': stats.usedMemory.toString(),
+
+    // Cpu Usage
+    'cpuUsage': stats.cpuUsage.toStringAsFixed(1),
+
+    // System Information
+    'systemName': stats.systemName ?? 'Unknown',
+    'osVersion': stats.osVersion ?? 'Unknown',
+    'hostName': stats.hostName ?? 'Unknown',
+    'kernelVersion': stats.kernelVersion ?? 'Unknown',
+
+    // Timestamp
     'timestamp': DateTime.now().toIso8601String(),
   };
 }
 
 /// Broadcasts system st to all connected clients every second
 void startStatsBroadcast() {
-  Timer.periodic(const Duration(seconds: 1), (_) {
-    final data = jsonEncode(getSystemStats());
-        for (final client in clients) {
+  Timer.periodic(const Duration(seconds: 1), (_) async {
+    final data = jsonEncode(await getSystemStats());
+    for (final client in clients) {
       try {
         client.add(data);
       } catch (e) {
