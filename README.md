@@ -8,15 +8,6 @@ This project explores **cross-language architecture**, where each language is us
 * 🟦 Dart → networking + WebSocket server
 * 🌐 Web → real-time visualization
 
----
-
-## 🚀 Demo
-
-![Dashboard Demo](demo.gif)
-
-> Live system stats updating in real-time via WebSockets
-
----
 
 ## ✨ Features
 
@@ -42,12 +33,6 @@ WebSocket
    ↓
 Browser Dashboard
 ```
-
-### Why this design?
-
-* Rust provides **efficient, low-level access** to system resources
-* Dart handles **asynchronous networking and WebSockets**
-* The frontend remains **decoupled and flexible**
 
 ---
 
@@ -89,22 +74,18 @@ dart pub get
 
 #### Rust
 
-Make sure Rust is installed:
-
 ```bash
 rustc --version
 ```
 
-If not, install from:
-
-https://rustup.rs/
+If not installed: https://rustup.rs/
 
 ---
 
 ### 3. Build the Rust library
 
 ```bash
-cd rustcode/stats_engine
+cd rust
 cargo build
 ```
 
@@ -116,8 +97,8 @@ Run from project root:
 
 ```bash
 flutter_rust_bridge_codegen generate \
---rust-root rustcode/stats_engine \
---rust-input crate:: \
+--rust-root rust \
+--rust-input crate::api \
 --dart-output lib/rust/bridge_generated.dart
 ```
 
@@ -126,14 +107,12 @@ flutter_rust_bridge_codegen generate \
 ### 5. Run the CLI server
 
 ```bash
-dart run bin/server.dart
+dart run bin/main.dart
 ```
 
 ---
 
 ### 6. Open the dashboard
-
-Open in browser:
 
 ```
 http://localhost:8080
@@ -164,21 +143,34 @@ The server streams JSON data every second:
 systemdashboardcli/
 │
 ├── lib/
-│   └── rust/
-│       └── bridge_generated.dart
+│   ├── rust/
+│   │   ├── bridge_generated.dart
+│   │   ├── frb_generated.dart
+│   │   ├── frb_generated.io.dart
+│   │   └── frb_generated.web.dart
+│   │
+│   ├── server.dart
+│   ├── websocket.dart
+│   └── src/
 │
-├── rustcode/
-│   └── stats_engine/
-│       ├── src/
-│       │   ├── lib.rs
-│       │   └── frb_generated.rs
-│       └── Cargo.toml
+├── rust/
+│   ├── src/
+│   │   ├── api/
+│   │   │   ├── mod.rs
+│   │   │   └── simple.rs   
+│   │   │
+│   │   ├── lib.rs
+│   │   └── frb_generated.rs
+│   │
+│   ├── Cargo.toml
+│   └── target/
 │
 ├── bin/
-│   └── server.dart
+│   └── main.dart
 │
-└── web/
-    └── dashboard/
+├── web/
+│
+└── test/
 ```
 
 ---
@@ -237,16 +229,9 @@ MIT License
 
 ---
 
-## 🙌 Acknowledgements
-
-* Rust ecosystem
-* Dart & Flutter team
-* flutter_rust_bridge contributors
-
----
-
 ## 💡 Author
 
 Built by **John Audu**
+
 
 
