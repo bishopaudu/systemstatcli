@@ -1,6 +1,6 @@
 # 🌐 System Stats Dashboard (CLI + Flutter Web)
 
-A simple **cross-platform system dashboard** built with **Dart CLI** and **Flutter Web**.  
+A simple **cross-platform system dashboard** built with **Dart CLI**,**Flutter Web** and **Rust** via the **flutter rust bridge**.  
 It provides **real-time system stats** in your browser using WebSockets.
 
 ![Dashboard Demo](demo.gif)  <!-- You can replace with an actual GIF -->
